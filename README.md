@@ -73,15 +73,13 @@ val nearbyUsers: Flow<Map<Key, LocationDataSnapshot>> =
         .flowOn(Dispatchers.IO)
         .onEach { map ->
             map.onEach {
-                val key: Key = it.key
-                val data: LocationDataSnapshot = it.value
-                val geoLocation: GeoLocation = data.location
-                val user: DataSnapshot = data.data
+                val key = it.key
+                val (geoLocation, dataSnapshot) = it.value
             }
         }
 ```
 
-##### Querying for locations and corresponding users with same keys in /users
+#### Querying for locations and corresponding users with same keys in /users
 
 ```kotlin
 val nearbyUsers: Flow<Map<Key, LocationData<User>>> = 
@@ -90,10 +88,8 @@ val nearbyUsers: Flow<Map<Key, LocationData<User>>> =
         .flowOn(Dispatchers.IO)
         .onEach { map ->
             map.onEach {
-                val key: Key = it.key
-                val data: LocationData<User> = it.value
-                val geoLocation: GeoLocation = data.location
-                val user: User? = data.data // DataSnapshot.getValue() can return null.
+                val key = it.key
+                val (geoLocation, user) = it.value
             }
         }
 ```
