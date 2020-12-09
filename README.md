@@ -16,7 +16,17 @@ This library provides a series of extension functions that allow for a more idio
 
 ## Installation 
 
-On app-level build.gradle, add dependency:
+On project-level `build.gradle`, add [Jitpack](https://jitpack.io/) repository:
+
+```groovy
+allprojects {
+  repositories {
+    maven { url 'https://jitpack.io' }
+  }
+}
+```
+
+On app-level `build.gradle`, add dependency:
 
 ```groovy
 dependencies {
@@ -39,9 +49,9 @@ val geoQuery = geoFire.queryAtLocation(geoLocation, radius)
 
 We recommend converting the GeoQuery to Flows for consuming the query result data. You can convert it to:
 
-1. Flow<Map<Key, GeoLocation>>
-2. Flow<Map<Key, LocationDataSnapshot>> // A pair of GeoLocation and DataSnapshot
-3. Flow<Map<Key, LocationData<T>>       // A pair of GeoLocation and data of type T.
+1. `Flow<Map<Key, GeoLocation>>`
+2. `Flow<Map<Key, LocationDataSnapshot>>` // A pair of GeoLocation and DataSnapshot
+3. `Flow<Map<Key, LocationData<T>>`       // A pair of GeoLocation and data of type T.
 
 2 and 3 are for the use cases of querying GeoLocations to subsequently query for the related data on another database reference.
 
