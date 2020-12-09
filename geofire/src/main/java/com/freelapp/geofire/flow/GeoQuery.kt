@@ -9,10 +9,12 @@ import com.freelapp.geofire.model.LocationDataSnapshot
 import com.freelapp.geofire.util.getTypedValue
 import com.freelapp.geofire.util.tryOffer
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.*
 
+@ExperimentalCoroutinesApi
 internal fun GeoQuery.asFlowImpl(): Flow<Map<Key, GeoLocation>> = callbackFlow {
     val locations = mutableMapOf<Key, GeoLocation>()
     val listener = addGeoQueryEventListener {
@@ -26,14 +28,14 @@ internal fun GeoQuery.asFlowImpl(): Flow<Map<Key, GeoLocation>> = callbackFlow {
 }
 
 @PublishedApi
+@ExperimentalCoroutinesApi
 internal fun GeoQuery.asFlowImpl(
     dataRef: String
 ): Flow<Map<Key, LocationDataSnapshot>> =
     asFlowImpl()
         .mapLatest { geoLocationMap ->
-            geoLocationMap.mapValues {
-                it.value to it.key.asDataSnapshotFlow(dataRef)
-            }
+            geoLocationMap
+                .mapValues { it.value to it.key.asDataSnapshotFlow(dataRef) }
         }
         .flatMapLatest { geoLocationDataSnapshotFlowMap ->
             val snapFlows = geoLocationDataSnapshotFlowMap.map { it.value.second }
@@ -46,11 +48,11 @@ internal fun GeoQuery.asFlowImpl(
                         val dataSnapshot = it.value
                         LocationDataSnapshot(geoLocation, dataSnapshot)
                     }
-            }
+            }.onEmpty { emit(emptyMap()) } // if no snaps are found, we need to emit.
         }
-        .onEmpty { emit(emptyMap()) }
 
 @PublishedApi
+@ExperimentalCoroutinesApi
 internal inline fun <reified T : Any> GeoQuery.asTypedFlowImpl(
     dataRef: String
 ): Flow<Map<Key, LocationData<T>>> =
@@ -62,5 +64,3 @@ internal inline fun <reified T : Any> GeoQuery.asTypedFlowImpl(
                 }
             }
         }
-
-
