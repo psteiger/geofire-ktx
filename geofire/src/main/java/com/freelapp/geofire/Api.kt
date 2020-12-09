@@ -24,24 +24,28 @@ fun GeoQuery.addGeoQueryEventListener(
 // Flow
 
 /**
- * Transforms a [GeoQuery] into a cold [Flow] of pairs between the key and the [GeoLocation].
- * @return a flow of a mapping between the key and the [GeoLocation].
+ * Transforms a [GeoQuery] into a cold [Flow] of maps between [GeoQuery] keys and corresponding
+ * [GeoLocation]s.
+ *
+ * @return A [Flow] of maps between [GeoQuery] keys and corresponding [GeoLocation]s.
  */
 fun GeoQuery.asFlow(): Flow<Map<Key, GeoLocation>> = asFlowImpl()
 
 /**
- * Transforms a [GeoQuery] into a cold [Flow] of pairs between the key and [LocationDataSnapshot]
- * objects, which contain the [GeoLocation] and the [DataSnapshot] stored in [dataRef].
- * @return a flow of a mapping between the key and the [LocationDataSnapshot].
+ * Transforms a [GeoQuery] into a cold [Flow] of maps between [GeoQuery] keys and corresponding
+ * [LocationDataSnapshot] objects, which contain the [GeoLocation] and the [DataSnapshot] stored in
+ * "[dataRef]/$key".
+ *
+ * @return A [Flow] of maps between [GeoQuery] keys and corresponding [LocationDataSnapshot] objects.
  */
 fun GeoQuery.asFlow(
     dataRef: String
 ): Flow<Map<Key, LocationDataSnapshot>> = asFlowImpl(dataRef)
 
 /**
- * Transforms a [GeoQuery] into a cold [Flow] of pairs between the key and [LocationData] objects,
- * which contain the [GeoLocation] and an object of type [T] (the object obtained by converting the
- * [DataSnapshot] stored in [dataRef] to an object of type [T]).
+ * Transforms a [GeoQuery] into a cold [Flow] of maps between [GeoQuery] keys and corresponding
+ * [LocationData] objects, which contain the [GeoLocation] and an object of type [T] (the object
+ * obtained by converting the [DataSnapshot] stored in "[dataRef]/$key" to an object of type [T]).
  * <p>
  * If conversion of the [DataSnapshot] to an object of type [T] fails, [LocationData]'s data will be
  * null.
