@@ -55,7 +55,7 @@ We recommend converting the GeoQuery to Flows for consuming the query result dat
 
 2 and 3 are for the use cases of querying GeoLocations to subsequently query for the related data on another database reference.
 
-##### Querying for GeoLocations
+#### Querying for GeoLocations
 
 ```kotlin
 val nearbyGeoLocations: Flow<Map<Key, GeoLocation>> = 
@@ -64,7 +64,7 @@ val nearbyGeoLocations: Flow<Map<Key, GeoLocation>> =
         .flowOn(Dispatchers.IO)
 ```
 
-##### Querying for locations and corresponding DataSnapshots with same keys in /users
+#### Querying for locations and corresponding DataSnapshots with same keys in /users
 
 ```kotlin
 val nearbyUsers: Flow<Map<Key, LocationDataSnapshot>> = 
@@ -98,7 +98,7 @@ val nearbyUsers: Flow<Map<Key, LocationData<User>>> =
         }
 ```
 
-##### Notes
+#### Notes
 
 1. In examples above, `Key` is just a `typealias` to `String`.
 2. All flows above are *cold*, and need to be collected so they start running (e.g. with `launchIn()`)
