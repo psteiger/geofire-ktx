@@ -13,6 +13,7 @@ import com.freelapp.geofire.model.LocationData
 import com.freelapp.geofire.model.LocationDataSnapshot
 import com.freelapp.geofire.util.Key
 import com.google.firebase.database.DataSnapshot
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 
 // Builders
@@ -29,6 +30,7 @@ fun GeoQuery.addGeoQueryEventListener(
  *
  * @return A [Flow] of maps between [GeoQuery] keys and corresponding [GeoLocation]s.
  */
+@ExperimentalCoroutinesApi
 fun GeoQuery.asFlow(): Flow<Map<Key, GeoLocation>> = asFlowImpl()
 
 /**
@@ -38,6 +40,7 @@ fun GeoQuery.asFlow(): Flow<Map<Key, GeoLocation>> = asFlowImpl()
  *
  * @return A [Flow] of maps between [GeoQuery] keys and corresponding [LocationDataSnapshot] objects.
  */
+@ExperimentalCoroutinesApi
 fun GeoQuery.asFlow(
     dataRef: String
 ): Flow<Map<Key, LocationDataSnapshot>> = asFlowImpl(dataRef)
@@ -52,6 +55,7 @@ fun GeoQuery.asFlow(
  *
  * @return a flow of a mapping between the key and the [LocationData].
  */
+@ExperimentalCoroutinesApi
 inline fun <reified T : Any> GeoQuery.asTypedFlow(
     dataRef: String
 ): Flow<Map<Key, LocationData<T>>> = asTypedFlowImpl(dataRef)
