@@ -98,7 +98,7 @@ val nearbyUsers: Flow<Map<Key, LocationData<User>>> =
 
 1. In examples above, `Key` is just a `typealias` to `String`.
 2. All flows above are *cold*, and need to be collected so they start running (e.g. with `launchIn()`)
-3. Consider materializing the flows to `SharedFlow` (`Flow<T>.shareIn()`) or `StateFlow` (`Flow<T>.stateIn()`) if multiple collectors will be used.
+3. Consider converting the flows to `SharedFlow` (`Flow<T>.shareIn()`) or `StateFlow` (`Flow<T>.stateIn()`) if multiple collectors will be used.
 
 
 ### Builder
