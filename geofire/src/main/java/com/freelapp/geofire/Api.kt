@@ -59,3 +59,19 @@ fun GeoQuery.asFlow(
 inline fun <reified T : Any> GeoQuery.asTypedFlow(
     dataRef: String
 ): Flow<Map<Key, LocationData<T>>> = asTypedFlowImpl(dataRef)
+
+/**
+ * Transforms a [GeoQuery] into a cold [Flow] of maps between [GeoQuery] keys and corresponding
+ * [LocationData] objects, which contain the [GeoLocation] and an object of type [T] (the object
+ * obtained by converting the [DataSnapshot] stored in "[dataRef]/$key" to an object of type [T]).
+ * <p>
+ * If conversion of the [DataSnapshot] to an object of type [T] fails, [LocationData]'s data will be
+ * null.
+ *
+ * @return a flow of a mapping between the key and the [LocationData].
+ */
+@ExperimentalCoroutinesApi
+fun <T : Any> GeoQuery.asTypedFlow(
+    clazz: Class<T>,
+    dataRef: String
+): Flow<Map<Key, LocationData<T>>> = asTypedFlowImpl(clazz, dataRef)

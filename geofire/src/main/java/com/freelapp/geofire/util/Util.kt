@@ -12,3 +12,7 @@ internal fun <E> SendChannel<E>.tryOffer(element: E): Boolean =
 @PublishedApi
 internal inline fun <reified T : Any> DataSnapshot.getTypedValue(): T? =
     getValue(object : GenericTypeIndicator<T>() {})
+
+@PublishedApi
+internal fun <T : Any> DataSnapshot.getTypedValue(clazz: Class<T>): T? =
+    getValue(clazz)

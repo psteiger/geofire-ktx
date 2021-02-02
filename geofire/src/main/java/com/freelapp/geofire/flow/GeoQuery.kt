@@ -64,3 +64,18 @@ internal inline fun <reified T : Any> GeoQuery.asTypedFlowImpl(
                 }
             }
         }
+
+@PublishedApi
+@ExperimentalCoroutinesApi
+internal fun <T : Any> GeoQuery.asTypedFlowImpl(
+    clazz: Class<T>,
+    dataRef: String
+): Flow<Map<Key, LocationData<T>>> =
+    asFlowImpl(dataRef)
+        .mapLatest { map ->
+            map.mapValues {
+                it.value.run {
+                    LocationData(location, data.getTypedValue(clazz))
+                }
+            }
+        }
