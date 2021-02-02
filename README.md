@@ -30,7 +30,7 @@ On app-level `build.gradle`, add dependency:
 
 ```groovy
 dependencies {
-    implementation 'com.github.psteiger:geofire-ktx:0.4'
+    implementation 'com.github.psteiger:geofire-ktx:0.4.1'
 }
 ```
 
