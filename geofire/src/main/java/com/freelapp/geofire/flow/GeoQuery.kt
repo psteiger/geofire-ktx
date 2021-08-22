@@ -8,7 +8,6 @@ import com.freelapp.geofire.addGeoQueryEventListener
 import com.freelapp.geofire.model.LocationData
 import com.freelapp.geofire.model.LocationDataSnapshot
 import com.freelapp.geofire.util.getTypedValue
-import com.freelapp.geofire.util.tryOffer
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.*
@@ -28,15 +27,15 @@ internal fun GeoQuery.asFlowImpl(): Flow<Map<Key, GeoLocation>> = callbackFlow {
     val channel = actor<Msg>(capacity = Channel.UNLIMITED) {
         val locations = mutableMapOf<Key, GeoLocation>()
         var initialDataHandled = false
-        fun maybeOffer() {
-            if (initialDataHandled) tryOffer(locations.toMap())
+        fun maybeSend() {
+            if (initialDataHandled) trySend(locations.toMap())
         }
         for (msg in channel) {
             when (msg) {
                 is Msg.LocationChange -> msg.block(locations)
                 is Msg.Ready -> initialDataHandled = true
             }
-            maybeOffer()
+            maybeSend()
         }
     }
 
