@@ -66,7 +66,7 @@ fun GeoQuery.asFlow(
 @ExperimentalCoroutinesApi
 inline fun <reified T : Any> GeoQuery.asTypedFlow(
     dataRef: String
-): Flow<Map<Key, LocationData<T>>> =
+): Flow<Map<Key, LocationData<T?>>> =
     asTypedFlowImpl(dataRef)
 
 /**
@@ -81,7 +81,7 @@ inline fun <reified T : Any> GeoQuery.asTypedFlow(
 @ExperimentalCoroutinesApi
 inline fun <reified T : Any, U> GeoQuery.asTypedFlow(
     dataRef: String,
-    @BuilderInference crossinline combiner: (key: String, location: GeoLocation, data: T?) -> U
+    @BuilderInference crossinline combiner: (key: String, location: GeoLocation, data: T) -> U
 ): Flow<List<U>> =
     asTypedFlowImpl(dataRef, combiner)
 
@@ -100,5 +100,5 @@ inline fun <reified T : Any, U> GeoQuery.asTypedFlow(
 fun <T : Any> GeoQuery.asTypedFlow(
     clazz: Class<T>,
     dataRef: String
-): Flow<Map<Key, LocationData<T>>> =
+): Flow<Map<Key, LocationData<T?>>> =
     asTypedFlowImpl(clazz, dataRef)
