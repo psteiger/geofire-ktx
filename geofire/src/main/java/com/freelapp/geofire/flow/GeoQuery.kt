@@ -96,7 +96,7 @@ internal fun GeoQuery.asFlowImpl(
 @ExperimentalCoroutinesApi
 internal inline fun <reified T : Any> GeoQuery.asTypedFlowImpl(
     dataRef: String
-): Flow<Map<Key, LocationData<T>>> =
+): Flow<Map<Key, LocationData<T?>>> =
     asFlowImpl(dataRef)
         .mapLatest { map ->
             map.mapValues {
@@ -107,15 +107,25 @@ internal inline fun <reified T : Any> GeoQuery.asTypedFlowImpl(
         }
         .flowOn(Dispatchers.IO)
 
+@ExperimentalCoroutinesApi
+@PublishedApi
+internal inline fun <reified T : Any> Flow<Map<Key, LocationData<T?>>>.filterDataNotNull(): Flow<Map<Key, LocationData<T>>> =
+    mapLatest { map ->
+        map
+            .filterValues { it.data != null }
+            .mapValues { LocationData(it.value.location, it.value.data!!) }
+    }
+
 @OptIn(ExperimentalTypeInference::class)
 @ObsoleteCoroutinesApi
 @PublishedApi
 @ExperimentalCoroutinesApi
 internal inline fun <reified T : Any, U> GeoQuery.asTypedFlowImpl(
     dataRef: String,
-    @BuilderInference crossinline combiner: (key: String, location: GeoLocation, data: T?) -> U
+    @BuilderInference crossinline combiner: (key: String, location: GeoLocation, data: T) -> U
 ): Flow<List<U>> =
     asTypedFlowImpl<T>(dataRef)
+        .filterDataNotNull()
         .mapLatest { map ->
             map.map { (key, locationData) ->
                 val (location, data) = locationData
@@ -130,7 +140,7 @@ internal inline fun <reified T : Any, U> GeoQuery.asTypedFlowImpl(
 internal fun <T : Any> GeoQuery.asTypedFlowImpl(
     clazz: Class<T>,
     dataRef: String
-): Flow<Map<Key, LocationData<T>>> =
+): Flow<Map<Key, LocationData<T?>>> =
     asFlowImpl(dataRef)
         .mapLatest { map ->
             map.mapValues {

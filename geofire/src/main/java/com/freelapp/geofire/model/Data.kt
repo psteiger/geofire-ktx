@@ -10,5 +10,5 @@ data class LocationDataSnapshot(
 
 data class LocationData<T>(
     val location: GeoLocation,
-    val data: T?
+    val data: T
 )
