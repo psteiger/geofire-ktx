@@ -14,13 +14,15 @@ import com.freelapp.geofire.model.LocationDataSnapshot
 import com.freelapp.geofire.util.Key
 import com.google.firebase.database.DataSnapshot
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 
 // Builders
 
-fun GeoQuery.addGeoQueryEventListener(
+inline fun GeoQuery.addGeoQueryEventListener(
     block: GeoQueryEventListenerBuilder.() -> Unit
-): GeoQueryEventListener = addGeoQueryEventListenerImpl(block)
+): GeoQueryEventListener =
+    addGeoQueryEventListenerImpl(block)
 
 // Flow
 
@@ -30,8 +32,10 @@ fun GeoQuery.addGeoQueryEventListener(
  *
  * @return A [Flow] of maps between [GeoQuery] keys and corresponding [GeoLocation]s.
  */
+@ObsoleteCoroutinesApi
 @ExperimentalCoroutinesApi
-fun GeoQuery.asFlow(): Flow<Map<Key, GeoLocation>> = asFlowImpl()
+fun GeoQuery.asFlow(): Flow<Map<Key, GeoLocation>> =
+    asFlowImpl()
 
 /**
  * Transforms a [GeoQuery] into a cold [Flow] of maps between [GeoQuery] keys and corresponding
@@ -40,10 +44,12 @@ fun GeoQuery.asFlow(): Flow<Map<Key, GeoLocation>> = asFlowImpl()
  *
  * @return A [Flow] of maps between [GeoQuery] keys and corresponding [LocationDataSnapshot] objects.
  */
+@ObsoleteCoroutinesApi
 @ExperimentalCoroutinesApi
 fun GeoQuery.asFlow(
     dataRef: String
-): Flow<Map<Key, LocationDataSnapshot>> = asFlowImpl(dataRef)
+): Flow<Map<Key, LocationDataSnapshot>> =
+    asFlowImpl(dataRef)
 
 /**
  * Transforms a [GeoQuery] into a cold [Flow] of maps between [GeoQuery] keys and corresponding
@@ -55,10 +61,12 @@ fun GeoQuery.asFlow(
  *
  * @return a flow of a mapping between the key and the [LocationData].
  */
+@ObsoleteCoroutinesApi
 @ExperimentalCoroutinesApi
 inline fun <reified T : Any> GeoQuery.asTypedFlow(
     dataRef: String
-): Flow<Map<Key, LocationData<T>>> = asTypedFlowImpl(dataRef)
+): Flow<Map<Key, LocationData<T>>> =
+    asTypedFlowImpl(dataRef)
 
 /**
  * Transforms a [GeoQuery] into a cold [Flow] of maps between [GeoQuery] keys and corresponding
@@ -70,8 +78,10 @@ inline fun <reified T : Any> GeoQuery.asTypedFlow(
  *
  * @return a flow of a mapping between the key and the [LocationData].
  */
+@ObsoleteCoroutinesApi
 @ExperimentalCoroutinesApi
 fun <T : Any> GeoQuery.asTypedFlow(
     clazz: Class<T>,
     dataRef: String
-): Flow<Map<Key, LocationData<T>>> = asTypedFlowImpl(clazz, dataRef)
+): Flow<Map<Key, LocationData<T>>> =
+    asTypedFlowImpl(clazz, dataRef)

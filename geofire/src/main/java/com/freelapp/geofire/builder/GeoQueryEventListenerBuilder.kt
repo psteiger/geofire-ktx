@@ -5,14 +5,16 @@ import com.firebase.geofire.GeoQuery
 import com.firebase.geofire.GeoQueryEventListener
 import com.google.firebase.database.DatabaseError
 
-internal fun GeoQuery.addGeoQueryEventListenerImpl(
+@PublishedApi
+internal inline fun GeoQuery.addGeoQueryEventListenerImpl(
     block: GeoQueryEventListenerBuilder.() -> Unit
 ): GeoQueryEventListener =
     GeoQueryEventListener(block)
         .also { addGeoQueryEventListener(it) }
 
 @Suppress("FunctionName")
-private fun GeoQueryEventListener(
+@PublishedApi
+internal inline fun GeoQueryEventListener(
     block: GeoQueryEventListenerBuilder.() -> Unit
 ) = GeoQueryEventListenerBuilder().apply(block).build()
 
@@ -23,15 +25,15 @@ class GeoQueryEventListenerBuilder(
     var onGeoQueryReady: (() -> Unit)? = null,
     var onGeoQueryError: ((DatabaseError) -> Unit)? = null
 ) {
-    fun onKeyEntered(onKeyEntered: String.(GeoLocation) -> Unit) =
+    fun onKeyEntered(onKeyEntered: (String, GeoLocation) -> Unit) =
         apply { this.onKeyEntered = onKeyEntered }
-    fun onKeyExited(onKeyExited: String.() -> Unit) =
+    fun onKeyExited(onKeyExited: (String) -> Unit) =
         apply { this.onKeyExited = onKeyExited }
-    fun onKeyMoved(onKeyMoved: String.(GeoLocation) -> Unit) =
+    fun onKeyMoved(onKeyMoved: (String, GeoLocation) -> Unit) =
         apply { this.onKeyMoved = onKeyMoved }
     fun onGeoQueryReady(onGeoQueryReady: () -> Unit) =
         apply { this.onGeoQueryReady = onGeoQueryReady }
-    fun onGeoQueryError(onGeoQueryError: DatabaseError.() -> Unit) =
+    fun onGeoQueryError(onGeoQueryError: (DatabaseError) -> Unit) =
         apply { this.onGeoQueryError = onGeoQueryError }
 
     fun build() = object : GeoQueryEventListener {
