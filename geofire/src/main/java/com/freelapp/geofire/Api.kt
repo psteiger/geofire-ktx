@@ -16,6 +16,7 @@ import com.google.firebase.database.DataSnapshot
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlin.experimental.ExperimentalTypeInference
 
 // Builders
 
@@ -67,6 +68,22 @@ inline fun <reified T : Any> GeoQuery.asTypedFlow(
     dataRef: String
 ): Flow<Map<Key, LocationData<T>>> =
     asTypedFlowImpl(dataRef)
+
+/**
+ * Transforms a [GeoQuery] into a cold [Flow] of lists of objects of type [U].
+ * Conversion from the GeoQuery's key, location, and the object of type [T] stored in [dataRef],
+ * to type [U] is given by the [combiner] function.
+ *
+ * @return a flow of lists of [U].
+ */
+@OptIn(ExperimentalTypeInference::class)
+@ObsoleteCoroutinesApi
+@ExperimentalCoroutinesApi
+inline fun <reified T : Any, U> GeoQuery.asTypedFlow(
+    dataRef: String,
+    @BuilderInference crossinline combiner: (key: String, location: GeoLocation, data: T?) -> U
+): Flow<List<U>> =
+    asTypedFlowImpl(dataRef, combiner)
 
 /**
  * Transforms a [GeoQuery] into a cold [Flow] of maps between [GeoQuery] keys and corresponding
