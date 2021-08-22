@@ -2,31 +2,66 @@ package com.freelapp.geofire.flow
 
 import com.firebase.geofire.GeoLocation
 import com.firebase.geofire.GeoQuery
+import com.freelapp.firebase.database.rtdb.valueFlow
 import com.freelapp.geofire.util.Key
 import com.freelapp.geofire.addGeoQueryEventListener
 import com.freelapp.geofire.model.LocationData
 import com.freelapp.geofire.model.LocationDataSnapshot
 import com.freelapp.geofire.util.getTypedValue
 import com.freelapp.geofire.util.tryOffer
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.cancel
+import com.google.firebase.database.ktx.database
+import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.actor
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.*
 
-@ExperimentalCoroutinesApi
-internal fun GeoQuery.asFlowImpl(): Flow<Map<Key, GeoLocation>> = callbackFlow {
-    val locations = mutableMapOf<Key, GeoLocation>()
-    val listener = addGeoQueryEventListener {
-        onKeyEntered { locations[this] = it }
-        onKeyExited { locations.remove(this) }
-        onKeyMoved { locations[this] = it }
-        onGeoQueryReady { tryOffer(locations.toMap()) }
-        onGeoQueryError { cancel(CancellationException("API Error", toException())) }
-    }
-    awaitClose { removeGeoQueryEventListener(listener) }
+private sealed class Msg {
+    data class LocationChange(val block: (MutableMap<Key, GeoLocation>) -> Unit): Msg()
+    object Ready : Msg()
 }
 
+@ObsoleteCoroutinesApi
+@ExperimentalCoroutinesApi
+internal fun GeoQuery.asFlowImpl(): Flow<Map<Key, GeoLocation>> = callbackFlow {
+    val channel = actor<Msg>(capacity = Channel.UNLIMITED) {
+        val locations = mutableMapOf<Key, GeoLocation>()
+        var initialDataHandled = false
+        fun maybeOffer() {
+            if (initialDataHandled) tryOffer(locations.toMap())
+        }
+        for (msg in channel) {
+            when (msg) {
+                is Msg.LocationChange -> msg.block(locations)
+                is Msg.Ready -> initialDataHandled = true
+            }
+            maybeOffer()
+        }
+    }
+
+    val listener = addGeoQueryEventListener {
+        onKeyEntered { key, location ->
+            channel.trySend(Msg.LocationChange { it[key] = location })
+        }
+        onKeyExited { key ->
+            channel.trySend(Msg.LocationChange { it.remove(key) })
+        }
+        onKeyMoved { key, location ->
+            channel.trySend(Msg.LocationChange { it[key] = location })
+        }
+        onGeoQueryReady {
+            channel.trySend(Msg.Ready)
+        }
+        onGeoQueryError {
+            cancel("API Error", it.toException())
+        }
+    }
+
+    awaitClose { removeGeoQueryEventListener(listener) }
+}.flowOn(Dispatchers.IO)
+
+@ObsoleteCoroutinesApi
 @PublishedApi
 @ExperimentalCoroutinesApi
 internal fun GeoQuery.asFlowImpl(
@@ -35,7 +70,11 @@ internal fun GeoQuery.asFlowImpl(
     asFlowImpl()
         .mapLatest { geoLocationMap ->
             geoLocationMap
-                .mapValues { it.value to it.key.asDataSnapshotFlow(dataRef) }
+                .mapValues {
+                    it.value to Firebase.database.getReference(dataRef)
+                        .child(it.key)
+                        .valueFlow()
+                }
         }
         .flatMapLatest { geoLocationDataSnapshotFlowMap ->
             val snapFlows = geoLocationDataSnapshotFlowMap.map { it.value.second }
@@ -50,7 +89,9 @@ internal fun GeoQuery.asFlowImpl(
                     }
             }.onEmpty { emit(emptyMap()) } // if no snaps are found, we need to emit.
         }
+        .flowOn(Dispatchers.IO)
 
+@ObsoleteCoroutinesApi
 @PublishedApi
 @ExperimentalCoroutinesApi
 internal inline fun <reified T : Any> GeoQuery.asTypedFlowImpl(
@@ -64,7 +105,9 @@ internal inline fun <reified T : Any> GeoQuery.asTypedFlowImpl(
                 }
             }
         }
+        .flowOn(Dispatchers.IO)
 
+@ObsoleteCoroutinesApi
 @PublishedApi
 @ExperimentalCoroutinesApi
 internal fun <T : Any> GeoQuery.asTypedFlowImpl(
@@ -79,3 +122,4 @@ internal fun <T : Any> GeoQuery.asTypedFlowImpl(
                 }
             }
         }
+        .flowOn(Dispatchers.IO)
