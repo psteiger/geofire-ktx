@@ -15,6 +15,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.actor
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.*
+import kotlin.experimental.ExperimentalTypeInference
 
 private sealed class Msg {
     data class LocationChange(val block: (MutableMap<Key, GeoLocation>) -> Unit): Msg()
@@ -102,6 +103,23 @@ internal inline fun <reified T : Any> GeoQuery.asTypedFlowImpl(
                 it.value.run {
                     LocationData(location, data.getTypedValue<T>())
                 }
+            }
+        }
+        .flowOn(Dispatchers.IO)
+
+@OptIn(ExperimentalTypeInference::class)
+@ObsoleteCoroutinesApi
+@PublishedApi
+@ExperimentalCoroutinesApi
+internal inline fun <reified T : Any, U> GeoQuery.asTypedFlowImpl(
+    dataRef: String,
+    @BuilderInference crossinline combiner: (key: String, location: GeoLocation, data: T?) -> U
+): Flow<List<U>> =
+    asTypedFlowImpl<T>(dataRef)
+        .mapLatest { map ->
+            map.map { (key, locationData) ->
+                val (location, data) = locationData
+                combiner(key, location, data)
             }
         }
         .flowOn(Dispatchers.IO)
