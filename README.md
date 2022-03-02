@@ -39,7 +39,7 @@ dependencies {
 Given the `GeoQuery`:
 
 ```kotlin
-val geoFire = GeoFire(FirebaseDatabase.getInstance().getReference("geofire"))
+val geoFire = GeoFire(Firebase.database.getReference("geofire"))
 val geoLocation = GeoLocation(0.0, 0.0)
 val radius = 100.0
 val geoQuery = geoFire.queryAtLocation(geoLocation, radius)
@@ -69,7 +69,7 @@ val nearbyGeoLocations: Flow<Map<Key, GeoLocation>> =
 ```kotlin
 val nearbyUsers: Flow<Map<Key, LocationDataSnapshot>> = 
     geoQuery
-        .asFlow("users")
+        .asFlow(Firebase.database.getReference("users"))
         .flowOn(Dispatchers.IO)
         .onEach { map ->
             map.onEach {
@@ -84,7 +84,7 @@ val nearbyUsers: Flow<Map<Key, LocationDataSnapshot>> =
 ```kotlin
 val nearbyUsers: Flow<Map<Key, LocationData<User>>> = 
     geoQuery
-        .asTypedFlow<User>("users")
+        .asTypedFlow<User>(Firebase.database.getReference("users"))
         .flowOn(Dispatchers.IO)
         .onEach { map ->
             map.onEach {

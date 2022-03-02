@@ -13,10 +13,10 @@ import com.freelapp.geofire.model.LocationData
 import com.freelapp.geofire.model.LocationDataSnapshot
 import com.freelapp.geofire.util.Key
 import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseReference
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlin.experimental.ExperimentalTypeInference
 
 // Builders
 
@@ -48,7 +48,7 @@ fun GeoQuery.asFlow(): Flow<Map<Key, GeoLocation>> =
 @ObsoleteCoroutinesApi
 @ExperimentalCoroutinesApi
 fun GeoQuery.asFlow(
-    dataRef: String
+    dataRef: DatabaseReference
 ): Flow<Map<Key, LocationDataSnapshot>> =
     asFlowImpl(dataRef)
 
@@ -65,7 +65,7 @@ fun GeoQuery.asFlow(
 @ObsoleteCoroutinesApi
 @ExperimentalCoroutinesApi
 inline fun <reified T : Any> GeoQuery.asTypedFlow(
-    dataRef: String
+    dataRef: DatabaseReference
 ): Flow<Map<Key, LocationData<T?>>> =
     asTypedFlowImpl(dataRef)
 
@@ -76,12 +76,11 @@ inline fun <reified T : Any> GeoQuery.asTypedFlow(
  *
  * @return a flow of lists of [U].
  */
-@OptIn(ExperimentalTypeInference::class)
 @ObsoleteCoroutinesApi
 @ExperimentalCoroutinesApi
 inline fun <reified T : Any, U> GeoQuery.asTypedFlow(
-    dataRef: String,
-    @BuilderInference crossinline combiner: (key: String, location: GeoLocation, data: T) -> U
+    dataRef: DatabaseReference,
+    crossinline combiner: (key: String, location: GeoLocation, data: T) -> U
 ): Flow<List<U>> =
     asTypedFlowImpl(dataRef, combiner)
 
@@ -99,6 +98,6 @@ inline fun <reified T : Any, U> GeoQuery.asTypedFlow(
 @ExperimentalCoroutinesApi
 fun <T : Any> GeoQuery.asTypedFlow(
     clazz: Class<T>,
-    dataRef: String
+    dataRef: DatabaseReference
 ): Flow<Map<Key, LocationData<T?>>> =
     asTypedFlowImpl(clazz, dataRef)

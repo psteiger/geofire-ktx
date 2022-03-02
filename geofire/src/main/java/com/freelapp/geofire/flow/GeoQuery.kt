@@ -2,20 +2,21 @@ package com.freelapp.geofire.flow
 
 import com.firebase.geofire.GeoLocation
 import com.firebase.geofire.GeoQuery
-import com.freelapp.firebase.database.rtdb.valueFlow
-import com.freelapp.geofire.util.Key
+import com.freelapp.firebase.database.rtdb.snapshotFlow
 import com.freelapp.geofire.addGeoQueryEventListener
 import com.freelapp.geofire.model.LocationData
 import com.freelapp.geofire.model.LocationDataSnapshot
+import com.freelapp.geofire.util.Key
 import com.freelapp.geofire.util.getTypedValue
-import com.google.firebase.database.ktx.database
-import com.google.firebase.ktx.Firebase
-import kotlinx.coroutines.*
+import com.google.firebase.database.DatabaseReference
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.ObsoleteCoroutinesApi
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.actor
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.*
-import kotlin.experimental.ExperimentalTypeInference
 
 private sealed class Msg {
     data class LocationChange(val block: (MutableMap<Key, GeoLocation>) -> Unit): Msg()
@@ -23,7 +24,6 @@ private sealed class Msg {
 }
 
 @ObsoleteCoroutinesApi
-@ExperimentalCoroutinesApi
 internal fun GeoQuery.asFlowImpl(): Flow<Map<Key, GeoLocation>> = callbackFlow {
     val channel = actor<Msg>(capacity = Channel.UNLIMITED) {
         val locations = mutableMapOf<Key, GeoLocation>()
@@ -65,15 +65,13 @@ internal fun GeoQuery.asFlowImpl(): Flow<Map<Key, GeoLocation>> = callbackFlow {
 @PublishedApi
 @ExperimentalCoroutinesApi
 internal fun GeoQuery.asFlowImpl(
-    dataRef: String
+    dataRef: DatabaseReference
 ): Flow<Map<Key, LocationDataSnapshot>> =
     asFlowImpl()
         .mapLatest { geoLocationMap ->
             geoLocationMap
                 .mapValues {
-                    it.value to Firebase.database.getReference(dataRef)
-                        .child(it.key)
-                        .valueFlow()
+                    it.value to dataRef.child(it.key).snapshotFlow()
                 }
         }
         .flatMapLatest { geoLocationDataSnapshotFlowMap ->
@@ -95,7 +93,7 @@ internal fun GeoQuery.asFlowImpl(
 @PublishedApi
 @ExperimentalCoroutinesApi
 internal inline fun <reified T : Any> GeoQuery.asTypedFlowImpl(
-    dataRef: String
+    dataRef: DatabaseReference
 ): Flow<Map<Key, LocationData<T?>>> =
     asFlowImpl(dataRef)
         .mapLatest { map ->
@@ -116,13 +114,12 @@ internal inline fun <reified T : Any> Flow<Map<Key, LocationData<T?>>>.filterDat
             .mapValues { LocationData(it.value.location, it.value.data!!) }
     }
 
-@OptIn(ExperimentalTypeInference::class)
 @ObsoleteCoroutinesApi
 @PublishedApi
 @ExperimentalCoroutinesApi
 internal inline fun <reified T : Any, U> GeoQuery.asTypedFlowImpl(
-    dataRef: String,
-    @BuilderInference crossinline combiner: (key: String, location: GeoLocation, data: T) -> U
+    dataRef: DatabaseReference,
+    crossinline combiner: (key: String, location: GeoLocation, data: T) -> U
 ): Flow<List<U>> =
     asTypedFlowImpl<T>(dataRef)
         .filterDataNotNull()
@@ -139,7 +136,7 @@ internal inline fun <reified T : Any, U> GeoQuery.asTypedFlowImpl(
 @ExperimentalCoroutinesApi
 internal fun <T : Any> GeoQuery.asTypedFlowImpl(
     clazz: Class<T>,
-    dataRef: String
+    dataRef: DatabaseReference
 ): Flow<Map<Key, LocationData<T?>>> =
     asFlowImpl(dataRef)
         .mapLatest { map ->

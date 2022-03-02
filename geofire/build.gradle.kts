@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    compileSdk = 30
+    compileSdk = 31
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
@@ -16,10 +16,11 @@ android {
 }
 
 dependencies {
-    coroutines()
-    geofire()
-    firebaseDatabase()
-    firebaseDatabaseKtx()
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
+    implementation("com.firebase:geofire-android:3.1.0")
+    implementation(platform("com.google.firebase:firebase-bom:29.1.0"))
+    implementation("com.google.firebase:firebase-database-ktx")
+    implementation("com.github.psteiger:firebase-database-ktx:0.2.2")
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
@@ -38,25 +39,4 @@ afterEvaluate {
             }
         }
     }
-}
-
-fun DependencyHandlerScope.coroutines() {
-    val version = "1.5.1"
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$version")
-}
-
-fun DependencyHandlerScope.geofire() {
-    val version = "3.0.0"
-    implementation("com.firebase:geofire-android:$version")
-}
-
-fun DependencyHandlerScope.firebaseDatabase() {
-    val version = "28.3.1"
-    implementation(platform("com.google.firebase:firebase-bom:$version"))
-    implementation("com.google.firebase:firebase-database-ktx")
-}
-
-fun DependencyHandlerScope.firebaseDatabaseKtx() {
-    val version = "0.1.8"
-    implementation("com.github.psteiger:firebase-database-ktx:$version")
 }
